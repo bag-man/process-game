@@ -22,8 +22,6 @@ void end() {
     printf("\nGame over.\n");
     fopen("game.over", "ab+");
     *lost = 1;
-  } else if(*lost == 1){
-    *lost = 2;
   }
   exit(0);
 }
@@ -67,10 +65,7 @@ int main(int argc, char *argv[]) {
   if(cpid == 0) { 
 
     // Child
-     printf("Parent pid %d\n", getppid());
-
-    //int argv0size = strlen(argv[0]); 
-    //strncpy(argv[0],"init",argv0size);
+    printf("Parent pid %d\n", getppid());
 
     printf("Press Enter to reset the timer.\n");
 
