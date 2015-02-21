@@ -20,8 +20,7 @@ int *lost;
 void end() {
   if(*lost == 0) {
     printf("\nGame over.\n");
-    // If killall is ran, and there is no file, you get two Game Overs.
-    fopen("game.over", "ab+"); 
+    //fopen("game.over", "ab+"); // To prove it works if stdout is lost
     *lost = 1;
   }
   exit(0);
