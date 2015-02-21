@@ -69,8 +69,8 @@ int main(int argc, char *argv[]) {
     // Child
     // printf("Parent pid %d\n", getppid());
 
-    int argv0size = strlen(argv[0]); 
-    strncpy(argv[0],"init",argv0size);
+    //int argv0size = strlen(argv[0]); 
+    //strncpy(argv[0],"init",argv0size);
 
     printf("Press Enter to reset the timer.\n");
 
@@ -93,6 +93,7 @@ int main(int argc, char *argv[]) {
 
     signal(SIGINT, end);
     signal(SIGHUP, end);
+    signal(SIGTERM, end);
     wait(0);
     end();
   }
