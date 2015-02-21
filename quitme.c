@@ -1,6 +1,6 @@
 #pragma GCC diagnostic ignored "-Wcpp" // sprunge.us/eNRe
 
-// gcc fork.c -o fork -std=c99 -lpthread
+// gcc quitme.c -o quitme -std=c99 -lpthread
 
 #include <stdio.h> 
 #include <stdlib.h> 
