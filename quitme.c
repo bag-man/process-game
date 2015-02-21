@@ -1,6 +1,6 @@
 #pragma GCC diagnostic ignored "-Wcpp" // sprunge.us/eNRe
 
-// gcc quitme.c -o quitme -std=c99 -lpthread
+// gcc fork.c -o fork -std=c99 -lpthread
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -9,7 +9,7 @@
 #include <pthread.h>
 #include <sys/wait.h>
 
-#define TIME 5
+#define TIME 10
 
 key_t key;
 int shmid;
@@ -33,14 +33,13 @@ void *check_parent() {
 }
 
 void *timer() {
-  int time = 5;
-
-  for (int i = TIME; i > 0; i--) {
+  for(int i = TIME; i > 0; i--) {
     sleep(1);
     printf("%d.. ", i);
     fflush(stdout);
   }
   end();
+  return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -51,7 +50,6 @@ int main(int argc, char *argv[]) {
   *lost = 0;
 
   cpid = fork();
-  int status;
 
   if(cpid == 0) { 
 
