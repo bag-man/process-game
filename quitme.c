@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
   if(cpid == 0) { 
 
     // Child
-    printf("Parent pid %d\n", getppid());
+    //printf("Parent pid %d\n", getppid());
 
     printf("Press Enter to reset the timer.\n");
 
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
   } else {
 
     // Parent 
-    printf("Child pid %d\n", cpid);
+    //printf("Child pid %d\n", cpid);
 
     signal(SIGINT, end);
     signal(SIGHUP, end);
