@@ -1,6 +1,6 @@
 #pragma GCC diagnostic ignored "-Wcpp" // sprunge.us/eNRe
 
-// gcc fork.c -o fork -std=c99 -lpthread
+// gcc quitme.c -o quitme -std=c99 -lpthread
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 
 #define TIME 10
+#define LIMIT 20
 
 key_t key;
 int shmid;
@@ -20,6 +21,9 @@ void end() {
     printf("\nGame over.\n");
     fopen("game.over", "ab+");
     *lost = 1;
+  } else if(*lost == 1){
+    *lost = 2;
+    printf("\nYou have won!\n");
   }
   exit(0);
 }
@@ -31,6 +35,14 @@ void *check_parent() {
     }
   }
 }
+
+void *limit() {
+  sleep(LIMIT);
+  *lost = 1;
+  end();
+  return 0;
+}
+  
 
 void *timer() {
   for(int i = TIME; i > 0; i--) {
@@ -58,9 +70,10 @@ int main(int argc, char *argv[]) {
 
     printf("Press Enter to reset the timer.\n");
 
-    pthread_t pth, time;
+    pthread_t pth, time, limiter;
     pthread_create(&pth, NULL, check_parent, NULL);
     pthread_create(&time, NULL, timer, NULL);
+    pthread_create(&limiter, NULL, limit, NULL);
     
     while(1) {
       if(getchar()) {
