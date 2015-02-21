@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
   if(cpid == 0) { 
 
     // Child
-    // printf("Parent pid %d\n", getppid());
+     printf("Parent pid %d\n", getppid());
 
     //int argv0size = strlen(argv[0]); 
     //strncpy(argv[0],"init",argv0size);
@@ -78,6 +78,7 @@ int main(int argc, char *argv[]) {
     pthread_create(&pth, NULL, check_parent, NULL);
     pthread_create(&time, NULL, timer, NULL);
     pthread_create(&limiter, NULL, limit, NULL);
+    signal(SIGTERM, end);
     
     while(1) {
       if(getchar()) {
@@ -89,11 +90,11 @@ int main(int argc, char *argv[]) {
   } else {
 
     // Parent 
-    // printf("Child pid %d\n", cpid);
+    printf("Child pid %d\n", cpid);
 
     signal(SIGINT, end);
     signal(SIGHUP, end);
-    signal(SIGTERM, end);
+    //signal(SIGTERM, end);
     wait(0);
     end();
   }
