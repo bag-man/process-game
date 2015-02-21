@@ -24,7 +24,6 @@ void end() {
     *lost = 1;
   } else if(*lost == 1){
     *lost = 2;
-    printf("\nYou have won!\n");
   }
   exit(0);
 }
@@ -39,6 +38,7 @@ void *check_parent() {
 
 void *limit() {
   sleep(LIMIT);
+  printf("\nYou have won!\n");
   *lost = 1;
   end();
   return 0;
