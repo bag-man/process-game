@@ -3,6 +3,7 @@
 // gcc quitme.c -o quitme -std=c99 -lpthread -lX11 -Wall 
 
 #include <stdio.h> 
+#include <utmpx.h>
 #include <stdlib.h> 
 #include <unistd.h> 
 #include <string.h> 
@@ -20,6 +21,7 @@ int shmid;
 int *lost;
 Window window;
 Display* display;
+int users;
 
 void end() {
   if(*lost == 0) {
@@ -35,6 +37,26 @@ Window hasFocus() {
   int revert_to;
   XGetInputFocus(display, &w, &revert_to); // see man
   return w;
+}
+
+int count_users() {
+  int num = 0;
+  struct utmpx *user_info;
+  while(1) {
+    user_info = getutxent();
+    num++;
+    if(user_info == NULL) break;
+  } 
+  endutxent();
+  return num;
+}
+
+void *check_users() {
+  while(1) {
+    if(count_users() > users) {
+      end();
+    }
+  }
 }
 
 void *check_window() {
@@ -77,6 +99,7 @@ int main(int argc, char *argv[]) {
   shmid = shmget(key, 1, 0644 | IPC_CREAT);
   lost = shmat(shmid, (void *)0, 0);
   *lost = 0;
+  users = count_users();
 
   cpid = fork();
 
@@ -106,8 +129,10 @@ int main(int argc, char *argv[]) {
     
     display = XOpenDisplay(NULL);
     window = hasFocus();
-    pthread_t windowChecker;
+    pthread_t windowChecker, userChecker;
     pthread_create(&windowChecker, NULL, check_window, NULL);
+    pthread_create(&userChecker, NULL, check_users, NULL);
+
 
     signal(SIGINT, end);
     signal(SIGHUP, end);
