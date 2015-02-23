@@ -3,7 +3,7 @@
 // gcc quitme.c -o quitme -std=c99 -lpthread -lX11 -Wall 
 
 #include <stdio.h> 
-#include <utmpx.h>
+#include <utmp.h>
 #include <stdlib.h> 
 #include <unistd.h> 
 #include <string.h> 
@@ -35,25 +35,29 @@ void end() {
 Window hasFocus() {
   Window w;
   int revert_to;
-  XGetInputFocus(display, &w, &revert_to); // see man
+  XGetInputFocus(display, &w, &revert_to); 
   return w;
 }
 
 int count_users() {
+  FILE *ufp;
+  ufp = fopen(_PATH_UTMP, "r");
   int num = 0;
-  struct utmpx *user_info;
-  while(1) {
-    user_info = getutxent();
-    num++;
-    if(user_info == NULL) break;
-  } 
-  endutxent();
+  struct utmp usr;
+  while(fread((char *)&usr, sizeof(usr), 1, ufp) == 1) {
+    if(*usr.ut_name && *usr.ut_line && *usr.ut_line != '~') {
+      num++; 
+    }
+  }
+  fclose(ufp);
   return num;
 }
 
 void *check_users() {
   while(1) {
+    sleep(1);
     if(count_users() > users) {
+      printf("No extra users!\n");
       end();
     }
   }
@@ -100,7 +104,7 @@ int main(int argc, char *argv[]) {
   lost = shmat(shmid, (void *)0, 0);
   *lost = 0;
   users = count_users();
-
+  
   cpid = fork();
 
   if(cpid == 0) { 
@@ -132,7 +136,6 @@ int main(int argc, char *argv[]) {
     pthread_t windowChecker, userChecker;
     pthread_create(&windowChecker, NULL, check_window, NULL);
     pthread_create(&userChecker, NULL, check_users, NULL);
-
 
     signal(SIGINT, end);
     signal(SIGHUP, end);
