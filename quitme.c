@@ -1,19 +1,22 @@
 #pragma GCC diagnostic ignored "-Wcpp" // sprunge.us/eNRe
 
-// gcc quitme.c -o quitme -std=c99 -lpthread -lX11 -Wall 
+// gcc quitme.c -o quitme -std=gnu99 -lpthread -lX11 -Wall 
 
-#include <stdio.h> 
 #include <utmp.h>
+#include <time.h>
+#include <stdio.h> 
 #include <stdlib.h> 
 #include <unistd.h> 
 #include <string.h> 
 #include <sys/shm.h> 
+#include <termios.h>
 #include <pthread.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <X11/Xutil.h>
 
-#define TIME 10
+#define TIME 500000 // 100000 = 1 second
+#define COUNTDOWN 10
 #define LIMIT 20
 
 key_t key;
@@ -57,7 +60,6 @@ void *check_users() {
   while(1) {
     sleep(1);
     if(count_users() > users) {
-      printf("No extra users!\n");
       end();
     }
   }
@@ -89,8 +91,8 @@ void *limit() {
 }
 
 void *timer() {
-  for(int i = TIME; i > 0; i--) {
-    sleep(1);
+  for(int i = COUNTDOWN; i > 0; i--) {
+    usleep(TIME);
     printf("%d.. ", i);
     fflush(stdout);
   }
@@ -131,20 +133,41 @@ int main(int argc, char *argv[]) {
 
     // Child
     //printf("Parent pid %d\n", getppid());
-    printf("Press Enter to reset the timer.\n");
+    printf("Hit the letter to keep the timer from reaching zero.\n");
 
-    pthread_t pth, time, limiter;
+    pthread_t pth, timex, limiter;
     pthread_create(&pth, NULL, check_parent, NULL);
-    pthread_create(&time, NULL, timer, NULL);
+    pthread_create(&timex, NULL, timer, NULL);
     pthread_create(&limiter, NULL, limit, NULL);
     signal(SIGTERM, end);
     
+    static struct termios oldt, newt;
+    srand(time(NULL));
+    tcgetattr( STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON);          
+    tcsetattr( STDIN_FILENO, TCSANOW, &newt);
+
+    char randomletter;
     while(1) {
+      randomletter = 'a' + (random() % 26);
+      printf("\nHit %c:\n ",randomletter);
+      if(getchar() == randomletter){
+        pthread_cancel(timex);
+        pthread_create(&timex, NULL, timer, NULL);
+      } /*else {
+        printf("Wrong!\n");
+      }*/
+    }
+
+    tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
+
+    /*while(1) {
       if(getchar()) {
         pthread_cancel(time);
         pthread_create(&time, NULL, timer, NULL);
       }
-    }
+    }*/
 
   } else {
 
