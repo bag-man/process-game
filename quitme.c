@@ -1,6 +1,6 @@
 #pragma GCC diagnostic ignored "-Wcpp" // sprunge.us/eNRe
 
-// gcc quitme.c -o quitme -std=c99 -lpthread
+// gcc quitme.c -o quitme -std=c99 -lpthread -Wall 
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -9,6 +9,7 @@
 #include <sys/shm.h> 
 #include <pthread.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 #define TIME 10
 #define LIMIT 20
@@ -24,6 +25,14 @@ void end() {
     *lost = 1;
   }
   exit(0);
+}
+
+void startup() {
+  if(geteuid() != 0) {
+    printf("Need to be root to play!\n");
+    exit(0);
+  }
+  // chmod("/usr/bin/kill", S_IRGRP);
 }
 
 void *check_parent() {
@@ -54,6 +63,7 @@ void *timer() {
 }
 
 int main(int argc, char *argv[]) {
+  startup();
   pid_t cpid;
   key = 42;
   shmid = shmget(key, 1, 0644 | IPC_CREAT);
@@ -65,7 +75,7 @@ int main(int argc, char *argv[]) {
   if(cpid == 0) { 
 
     // Child
-    //printf("Parent pid %d\n", getppid());
+    printf("Parent pid %d\n", getppid());
 
     printf("Press Enter to reset the timer.\n");
 
@@ -85,11 +95,13 @@ int main(int argc, char *argv[]) {
   } else {
 
     // Parent 
-    //printf("Child pid %d\n", cpid);
+    printf("Child pid %d\n", cpid);
 
     signal(SIGINT, end);
     signal(SIGHUP, end);
-    //signal(SIGTERM, end);
+    signal(SIGTERM, end);
+    signal(SIGTSTP, end);
+    signal(SIGKILL, end);
     wait(0);
     end();
   }
