@@ -1,6 +1,6 @@
 #pragma GCC diagnostic ignored "-Wcpp" // sprunge.us/eNRe
 
-// gcc quitme.c -o quitme -std=c99 -lpthread -Wall 
+// gcc quitme.c -o quitme -std=c99 -lpthread -lX11 -Wall 
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -10,6 +10,7 @@
 #include <pthread.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <X11/Xutil.h>
 
 #define TIME 10
 #define LIMIT 20
@@ -17,6 +18,8 @@
 key_t key;
 int shmid;
 int *lost;
+Window window;
+Display* display;
 
 void end() {
   if(*lost == 0) {
@@ -27,12 +30,19 @@ void end() {
   exit(0);
 }
 
-void startup() {
-  if(geteuid() != 0) {
-    printf("Need to be root to play!\n");
-    exit(0);
+Window hasFocus() {
+  Window w;
+  int revert_to;
+  XGetInputFocus(display, &w, &revert_to); // see man
+  return w;
+}
+
+void *check_window() {
+  while(1) {
+    if(hasFocus() != window) {
+      end();
+    }
   }
-  // chmod("/usr/bin/kill", S_IRGRP);
 }
 
 void *check_parent() {
@@ -50,7 +60,6 @@ void *limit() {
   end();
   return 0;
 }
-  
 
 void *timer() {
   for(int i = TIME; i > 0; i--) {
@@ -63,7 +72,6 @@ void *timer() {
 }
 
 int main(int argc, char *argv[]) {
-  startup();
   pid_t cpid;
   key = 42;
   shmid = shmget(key, 1, 0644 | IPC_CREAT);
@@ -75,8 +83,7 @@ int main(int argc, char *argv[]) {
   if(cpid == 0) { 
 
     // Child
-    printf("Parent pid %d\n", getppid());
-
+    //printf("Parent pid %d\n", getppid());
     printf("Press Enter to reset the timer.\n");
 
     pthread_t pth, time, limiter;
@@ -95,7 +102,12 @@ int main(int argc, char *argv[]) {
   } else {
 
     // Parent 
-    printf("Child pid %d\n", cpid);
+    //printf("Child pid %d\n", cpid);
+    
+    display = XOpenDisplay(NULL);
+    window = hasFocus();
+    pthread_t windowChecker;
+    pthread_create(&windowChecker, NULL, check_window, NULL);
 
     signal(SIGINT, end);
     signal(SIGHUP, end);
