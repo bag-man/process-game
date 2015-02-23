@@ -28,7 +28,7 @@ int users;
 
 void end() {
   if(*lost == 0) {
-    printf("\nGame over.\n");
+    printf("\n\nGame over.\n");
     //fopen("game.over", "ab+"); // To prove it works if stdout is lost
     *lost = 1;
   }
@@ -83,7 +83,7 @@ void *check_parent() {
 
 void *limit() {
   sleep(LIMIT);
-  printf("\nYou have won!\n");
+  printf("\n\nYou have won!\n");
   //fopen("You.won", "ab+"); // To prove it works if stdout is lost
   *lost = 1;
   end();
