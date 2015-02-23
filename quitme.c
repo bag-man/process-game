@@ -82,6 +82,7 @@ void *check_parent() {
 void *limit() {
   sleep(LIMIT);
   printf("\nYou have won!\n");
+  //fopen("You.won", "ab+"); // To prove it works if stdout is lost
   *lost = 1;
   end();
   return 0;
