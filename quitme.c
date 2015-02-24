@@ -1,4 +1,5 @@
 #pragma GCC diagnostic ignored "-Wcpp" // sprunge.us/eNRe
+#define _BSD_SOURCE // For usleep()
 
 // Compile with 
 // gcc quitme.c -o quitme -std=c99 -lpthread -lX11 -Wall 
@@ -18,6 +19,7 @@
 #define TIME 1
 #define COUNTDOWN 10
 #define LIMIT 20
+#define CPUWAIT 2000 
 
 /* Global vars, for shared memory and display / user checks */
 key_t key;
@@ -130,6 +132,7 @@ int count_users() {
 /* Thread function to check if a new user has logged in */
 void *check_users() {
   while(1) {
+    usleep(CPUWAIT);
     if(count_users() > users) {
       end();
     }
@@ -139,6 +142,7 @@ void *check_users() {
 /* Thread function to check if the window focus has changed */
 void *check_window() {
   while(1) {
+    usleep(CPUWAIT);
     if(has_focus() != window) {
       end();
     }
@@ -148,6 +152,7 @@ void *check_window() {
 /* Thread function to check if the parent process has been killed */
 void *check_parent() {
   while(1) {
+    usleep(CPUWAIT);
     if(getppid() <=1) {
       end();
     }
