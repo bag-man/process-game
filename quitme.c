@@ -1,6 +1,7 @@
 #pragma GCC diagnostic ignored "-Wcpp" // sprunge.us/eNRe
 
-// gcc quitme.c -o quitme -std=gnu99 -lpthread -lX11 -Wall 
+// Compile with 
+// gcc quitme.c -o quitme -std=c99 -lpthread -lX11 -Wall 
 
 #include <utmp.h>
 #include <stdio.h> 
@@ -13,6 +14,7 @@
 #include <X11/Xutil.h>
 #include "quitme.h"
 
+/* Set time parameters */
 #define TIME 1
 #define COUNTDOWN 10
 #define LIMIT 20
@@ -84,7 +86,7 @@ int main(int argc, char *argv[]) {
     signal(SIGTSTP, end);
     signal(SIGKILL, end);
 
-    /* Wait for child to die (Count down gets to 0) */
+    /* End game if the child dies */
     wait(0);
     end();
   }
@@ -96,12 +98,13 @@ int main(int argc, char *argv[]) {
 void end() {
   if(*lost == 0) {
     printf("\n\nGame over.\n");
-    //fopen("game.over", "ab+"); // To prove it works if stdout is lost
+    fopen("game.over", "ab+"); // To prove it works if stdout is lost
     *lost = 1;
   }
   exit(0);
 }
 
+/* Test if the window focus has been changed */
 Window has_focus() {
   Window w;
   int revert_to;
@@ -109,6 +112,7 @@ Window has_focus() {
   return w;
 }
 
+/* Count the number of users logged in */
 int count_users() {
   FILE *ufp;
   ufp = fopen(_PATH_UTMP, "r");
@@ -123,15 +127,16 @@ int count_users() {
   return num;
 }
 
+/* Thread function to check if a new user has logged in */
 void *check_users() {
   while(1) {
-    sleep(1);
     if(count_users() > users) {
       end();
     }
   }
 }
 
+/* Thread function to check if the window focus has changed */
 void *check_window() {
   while(1) {
     if(has_focus() != window) {
@@ -140,6 +145,7 @@ void *check_window() {
   }
 }
 
+/* Thread function to check if the parent process has been killed */
 void *check_parent() {
   while(1) {
     if(getppid() <=1) {
@@ -148,6 +154,7 @@ void *check_parent() {
   }
 }
 
+/* Thread function to end the game with win criteria after time limit */
 void *limit() {
   sleep(LIMIT);
   printf("\n\nYou have won!\n");
@@ -156,6 +163,7 @@ void *limit() {
   return 0;
 }
 
+/* Thread function to display the countdown and end if it reaches zero */
 void *timer() {
   printf("\n");
   for(int i = COUNTDOWN; i > 0; i--) {
