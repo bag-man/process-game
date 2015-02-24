@@ -3,19 +3,16 @@
 // gcc quitme.c -o quitme -std=gnu99 -lpthread -lX11 -Wall 
 
 #include <utmp.h>
-#include <time.h>
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <unistd.h> 
 #include <string.h> 
 #include <sys/shm.h> 
-#include <termios.h>
 #include <pthread.h>
 #include <sys/wait.h>
-#include <sys/stat.h>
 #include <X11/Xutil.h>
 
-#define TIME 500000 // 100000 = 1 second
+#define TIME 1
 #define COUNTDOWN 10
 #define LIMIT 20
 
@@ -84,32 +81,21 @@ void *check_parent() {
 void *limit() {
   sleep(LIMIT);
   printf("\n\nYou have won!\n");
-  //fopen("You.won", "ab+"); // To prove it works if stdout is lost
   *lost = 1;
   end();
   return 0;
 }
 
 void *timer() {
+  printf("\n");
   for(int i = COUNTDOWN; i > 0; i--) {
-    usleep(TIME);
+    sleep(TIME);
     printf("%d.. ", i);
     fflush(stdout);
   }
   end();
   return 0;
 }
-
-void gen_random(char *s, int len) {
-  char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
- 
-  for (int i = 0; i < len; ++i) {
-    s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
-  }
-
-  s[len] = 0;
-}
-
 
 int main(int argc, char *argv[]) {
   pid_t cpid;
@@ -118,68 +104,39 @@ int main(int argc, char *argv[]) {
   lost = shmat(shmid, (void *)0, 0);
   *lost = 0;
   users = count_users();
+
+  srand(time(NULL));
+  int r = rand();
+  char pname[10];
+  sprintf(pname, "%d", r);
+  int size = strlen(argv[0]); 
+  strncpy(argv[0],pname,size); 
   
   cpid = fork();
 
   if(cpid == 0) { 
 
-    srand(time(NULL));
-    int r = rand();
-    char pname[10];
-    sprintf(pname, "%d", r);
-
-    int size = strlen(argv[0]); 
-    strncpy(argv[0],pname,size); 
-
     // Child
     //printf("Parent pid %d\n", getppid());
-    printf("Hit the letter to keep the timer from reaching zero.\n");
+    printf("Hit enter to keep the timer from reaching zero.\n");
 
-    pthread_t pth, timex, limiter;
+    pthread_t pth, time, limiter;
     pthread_create(&pth, NULL, check_parent, NULL);
-    pthread_create(&timex, NULL, timer, NULL);
+    pthread_create(&time, NULL, timer, NULL);
     pthread_create(&limiter, NULL, limit, NULL);
     signal(SIGTERM, end);
     
-    static struct termios oldt, newt;
-    srand(time(NULL));
-    tcgetattr( STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON);          
-    tcsetattr( STDIN_FILENO, TCSANOW, &newt);
-
-    char randomletter;
     while(1) {
-      randomletter = 'a' + (random() % 26);
-      printf("\nHit %c:\n ",randomletter);
-      if(getchar() == randomletter){
-        pthread_cancel(timex);
-        pthread_create(&timex, NULL, timer, NULL);
-      } /*else {
-        printf("Wrong!\n");
-      }*/
-    }
-
-    tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
-
-    /*while(1) {
       if(getchar()) {
         pthread_cancel(time);
         pthread_create(&time, NULL, timer, NULL);
       }
-    }*/
+    }
 
   } else {
 
     // Parent 
     //printf("Child pid %d\n", cpid);
-    srand(time(NULL));
-    int r = rand();
-    char pname[10];
-    sprintf(pname, "%d", r);
-
-    int size = strlen(argv[0]); 
-    strncpy(argv[0],pname,size); 
 
     display = XOpenDisplay(NULL);
     window = hasFocus();
