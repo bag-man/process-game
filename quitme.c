@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
   /* Define startup vars for display / user checks */
   users = count_users();
   display = XOpenDisplay(NULL);
-  window = has_focus();
+  window = focussed_window();
 
   /* Generate random process name */
   srand(time(NULL));
@@ -107,7 +107,7 @@ void end() {
 }
 
 /* Test if the window focus has been changed */
-Window has_focus() {
+Window focussed_window() {
   Window w;
   int revert_to;
   XGetInputFocus(display, &w, &revert_to); 
@@ -143,7 +143,7 @@ void *check_users() {
 void *check_window() {
   while(1) {
     usleep(CPUWAIT);
-    if(has_focus() != window) {
+    if(focussed_window() != window) {
       end();
     }
   }
