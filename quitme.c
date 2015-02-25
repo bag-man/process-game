@@ -12,6 +12,7 @@
 #include <sys/shm.h> 
 #include <pthread.h>
 #include <sys/wait.h>
+#include <sys/prctl.h>
 #include <X11/Xutil.h>
 #include "quitme.h"
 
@@ -51,6 +52,7 @@ int main(int argc, char *argv[]) {
   sprintf(pname, "%d", r);
   int size = strlen(argv[0]); 
   strncpy(argv[0],pname,size); 
+  prctl(PR_SET_NAME, *pname);
 
   /* Detect if backgrounded */
   pid_t fg = tcgetpgrp(0);
