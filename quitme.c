@@ -16,10 +16,10 @@
 #include "quitme.h"
 
 /* Set time parameters */
-#define TIME 1
-#define COUNTDOWN 10
-#define LIMIT 600
-#define CPUWAIT 100000 
+#define TIME 1          // Time for each countdown before game over
+#define COUNTDOWN 10    // Start point of countdown
+#define LIMIT 600       // Limit before game is over and player wins
+#define CPUWAIT 100000  // Time for CPU to sleep in while loops (Microseconds)
 
 /* Global vars, for shared memory and display / user checks */
 key_t key;
