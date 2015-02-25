@@ -50,6 +50,13 @@ int main(int argc, char *argv[]) {
   int size = strlen(argv[0]); 
   strncpy(argv[0],pname,size); 
 
+  /* Detect if backgrounded */
+  pid_t fg = tcgetpgrp(0);
+  if(fg != getpgrp() && fg != -1) {
+    printf("No backgrounding!\n");
+    end();
+  }
+
   /* Create fork */
   pid_t cpid;
   cpid = fork();
