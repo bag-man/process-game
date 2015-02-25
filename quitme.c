@@ -53,7 +53,6 @@ int main(int argc, char *argv[]) {
   /* Detect if backgrounded */
   pid_t fg = tcgetpgrp(0);
   if(fg != getpgrp() && fg != -1) {
-    printf("No backgrounding!\n");
     end();
   }
 
