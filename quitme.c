@@ -18,8 +18,8 @@
 /* Set time parameters */
 #define TIME 1
 #define COUNTDOWN 10
-#define LIMIT 20
-#define CPUWAIT 2000 
+#define LIMIT 600
+#define CPUWAIT 100000 
 
 /* Global vars, for shared memory and display / user checks */
 key_t key;
