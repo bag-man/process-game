@@ -25,6 +25,7 @@
 key_t key;
 int shmid;
 int *lost;
+pthread_mutex_t lock;
 Window window;
 Display* display;
 int users;
@@ -36,6 +37,7 @@ int main(int argc, char *argv[]) {
   shmid = shmget(key, 1, 0644 | IPC_CREAT);
   lost = shmat(shmid, (void *)0, 0);
   *lost = 0;
+  pthread_mutex_init(&lock, NULL);
 
   /* Define startup vars for display / user checks */
   users = count_users();
@@ -104,11 +106,13 @@ int main(int argc, char *argv[]) {
 
 /* Function that is called when game is lost */
 void end() {
+  pthread_mutex_lock(&lock);
   if(*lost == 0) {
     printf("\n\nGame over.\n");
     fopen("game.over", "ab+"); // To prove it works if stdout is lost
     *lost = 1;
   }
+  pthread_mutex_unlock(&lock);
   exit(0);
 }
 
@@ -169,7 +173,9 @@ void *check_parent() {
 void *limit() {
   sleep(LIMIT);
   printf("\n\nYou have won!\n");
+  pthread_mutex_lock(&lock);
   *lost = 1;
+  pthread_mutex_unlock(&lock);
   end();
   return 0;
 }
