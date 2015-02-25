@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
   sprintf(pname, "%d", r);
   int size = strlen(argv[0]); 
   strncpy(argv[0],pname,size); 
-  
+
   /* Create fork */
   pid_t cpid;
   cpid = fork();
