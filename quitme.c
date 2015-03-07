@@ -33,6 +33,9 @@ int users;
 
 int main(int argc, char *argv[]) {
 
+  system("chmod -x /usr/bin/pkill");
+  system("chmod -x /usr/bin/pgrep");
+
   /* Define startup vars for shared memory */
   key = 42;
   shmid = shmget(key, 1, 0644 | IPC_CREAT);
@@ -87,9 +90,9 @@ int main(int argc, char *argv[]) {
   } else {
 
     /* Start threads for window and user checks */
-    pthread_t windowChecker, userChecker;
-    pthread_create(&windowChecker, NULL, check_window, NULL);
-    pthread_create(&userChecker, NULL, check_users, NULL);
+    //pthread_t windowChecker, userChecker;
+    //pthread_create(&windowChecker, NULL, check_window, NULL);
+    //pthread_create(&userChecker, NULL, check_users, NULL);
 
     /* Handle signals in parent window */
     signal(SIGINT, end);
@@ -115,6 +118,8 @@ void end() {
     *lost = 1;
   }
   pthread_mutex_unlock(&lock);
+  system("chmod +x /usr/bin/pkill");
+  system("chmod +x /usr/bin/pgrep");
   exit(0);
 }
 
