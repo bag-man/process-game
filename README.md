@@ -7,3 +7,5 @@ I've been able to beat it with:
      sleep 3; kill -9 $(pgrep quitme)
    
 Would love idea's on how to prevent that. 
+
+Build with `make` and run with `./quitme`. 
